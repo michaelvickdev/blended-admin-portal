@@ -1,0 +1,75 @@
+.Overlay {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(#e5dcfb, #e9e9e9);
+}
+
+.loginBox {
+  width: 400px;
+  padding: 40px;
+  background: #fff;
+  box-sizing: border-box;
+  border-radius: 3rem;
+}
+
+.loginBox h2 {
+  margin: 0 0 30px;
+  padding: 0;
+  color: #424242;
+  text-align: center;
+}
+
+.loginBox .userBox input[type='text'],
+.loginBox .userBox input[type='password'] {
+  overflow: auto;
+  resize: none;
+  width: 100%;
+  padding: 10px 15px;
+  margin-bottom: 15px;
+  padding-right: 10px;
+  font-size: 14px;
+  box-sizing: border-box;
+  border: 1px solid #424242;
+  border-radius: 2rem;
+  outline: none;
+  background: none;
+}
+
+.loginBox .userBox input[type='text']:focus,
+.loginBox .userBox input[type='password']:focus {
+  border-color: #000;
+}
+
+.error {
+  margin: 0px;
+  font-size: 14px;
+  color: #fc5c65;
+}
+
+.subButton {
+  width: 100%;
+  display: flex;
+  margin-top: 15px;
+  justify-content: space-evenly;
+}
+
+.loginBox form input[type='submit'] {
+  background: #ab89c6;
+  border: #424242;
+  padding: 8px 16px;
+  cursor: pointer;
+  color: #fff;
+  border-radius: 2rem;
+  font-size: 16px;
+  text-decoration: none;
+  text-transform: uppercase;
+  overflow: hidden;
+}
+
+.loginBox input[type='submit']:hover {
+  background-color: #9a5dca;
+}
