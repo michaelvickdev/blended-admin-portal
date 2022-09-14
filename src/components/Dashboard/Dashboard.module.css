@@ -1,0 +1,49 @@
+.homeContainer {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 1.5rem;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2rem;
+}
+
+.homeContainer > * {
+  padding: 3rem;
+  background: #fff;
+  border-radius: 2rem;
+  font-size: 1.5rem;
+  color: #424242;
+  text-decoration: none;
+  cursor: pointer;
+  border: 0px solid #424242;
+  box-sizing: border-box;
+  width: 250px;
+  height: 150px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.homeContainer > *:hover {
+  border-width: 1px;
+}
+
+.navigationBar {
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.navigationBar > button {
+  background-color: #fc5c65;
+  color: #fff;
+  border-radius: 1rem;
+  padding: 1rem;
+  margin-left: 1rem;
+  cursor: pointer;
+  border: none;
+  outline: none;
+}

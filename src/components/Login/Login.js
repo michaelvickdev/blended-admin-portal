@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import styles from './Login.module.css';
-import { auth } from '../config/firebase';
-import { signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
+import { auth } from '../../config/firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
 export const Login = () => {
   const [email, setEmail] = useState('');
@@ -22,17 +22,11 @@ export const Login = () => {
     }
   };
 
-  useEffect(() => {
-    onAuthStateChanged(auth, function (user) {
-      console.log(user);
-    });
-  }, []);
-
   return (
     <div className={styles.Overlay}>
       <div className={styles.loginBox}>
         <img
-          src={require('../assets/icon.png')}
+          src={require('../../assets/icon.png')}
           style={{
             display: 'block',
             width: '150px',
