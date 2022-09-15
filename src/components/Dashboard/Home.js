@@ -29,8 +29,8 @@ export const Home = () => {
 
   return (
     <div className={styles.homeContainer}>
-      <Link to="/all-users">Users</Link>
-      <Link to="/reported-posts">Reported Posts</Link>
+      <Link to="/all-users">Manage Users</Link>
+      <Link to="/reported-posts">Manage Posts</Link>
       {userData ? (
         <CSVLink data={userData} filename={'user-info.csv'}>
           Download User Info
