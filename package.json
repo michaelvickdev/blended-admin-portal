@@ -8,6 +8,8 @@
     "@testing-library/user-event": "^13.5.0",
     "firebase": "9.6.11",
     "react": "^18.2.0",
+    "react-alert": "^7.0.3",
+    "react-alert-template-mui": "^1.0.7",
     "react-csv": "^2.2.2",
     "react-dom": "^18.2.0",
     "react-infinite-scroll-component": "^6.1.0",
