@@ -62,7 +62,7 @@ export const Users = () => {
 
       const data = await res.json();
 
-      if (data.status === 200) {
+      if (data.success) {
         setUsers((prev) => prev.filter((user) => user.uid !== deleteUser.uid));
       }
     } catch (e) {

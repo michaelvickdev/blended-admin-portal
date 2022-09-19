@@ -4,6 +4,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import styles from './Dashboard.module.css';
 import { Home } from './Home';
 import { Users } from './Users/Users';
+import { Posts } from './Posts/Posts';
 import { auth } from '../../config/firebase';
 
 export const Dashboard = () => {
@@ -18,8 +19,9 @@ export const Dashboard = () => {
       </div>
       <Routes>
         <Route path="/dashboard" exact element={<Home />} />
-        <Route path="/all-users" exact element={<Users />} />
-        <Route path="/" element={<Navigate replace to="/dashboard" />} />
+        <Route path="/manage-users" exact element={<Users />} />
+        <Route path="/manage-posts" exact element={<Posts />} />
+        <Route path="/*" element={<Navigate replace to="/dashboard" />} />
       </Routes>
     </>
   );
