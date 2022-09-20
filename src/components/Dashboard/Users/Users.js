@@ -180,13 +180,15 @@ export const Users = () => {
               <button onClick={delHandler}>
                 {deleting ? 'Deleting...' : 'Yes, delete'}
               </button>
-              <button
-                onClick={() => {
-                  setDeleteUser(null);
-                }}
-              >
-                Cancel
-              </button>
+              {!deleting ? (
+                <button
+                  onClick={() => {
+                    setDeleteUser(null);
+                  }}
+                >
+                  Cancel
+                </button>
+              ) : null}
             </div>
           </div>
         </div>

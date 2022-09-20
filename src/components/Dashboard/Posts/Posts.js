@@ -8,12 +8,16 @@ import {
   startAfter,
   query,
   orderBy,
+  getDoc,
+  doc,
+  where,
 } from 'firebase/firestore';
 import { getImage } from '../../../hooks/getImage';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import defaultImg from '../../../assets/default-post.jpg';
+import userDefault from '../../../assets/default-profile.png';
 const DEL_URL =
-  'https://us-central1-blended-mates.cloudfunctions.net/deleteUser';
+  'https://us-central1-blended-mates.cloudfunctions.net/deleteFeed';
 
 const POST_PER_PAGE = 4;
 
@@ -23,13 +27,21 @@ export const Posts = () => {
   const [feeds, setFeeds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
-  const [deleteUser, setDeleteUser] = useState(null);
+  const [deleteFeed, setDeleteFeed] = useState(null);
+  const [reportedOnly, setReportedOnly] = useState(false);
 
-  const getFeeds = async (count = POST_PER_PAGE) => {
+  const getFeeds = async (count = POST_PER_PAGE, reported = false) => {
     if (lastDoc.current === 'end') return;
-    console.log('Getting...');
     setLoading(true);
-    const queryArray = [orderBy('uploadDate', 'desc'), limit(count)];
+    const queryArray = [
+      orderBy('reported', 'desc'),
+      orderBy('uploadDate', 'desc'),
+      limit(count),
+    ];
+    if (reported) {
+      queryArray.push(where('reported', '!=', []));
+    }
+
     if (lastDoc.current !== 'start') {
       queryArray.push(startAfter(lastDoc.current));
     }
@@ -45,8 +57,8 @@ export const Posts = () => {
     setLoading(false);
   };
 
-  const showDelModal = (user) => {
-    setDeleteUser(user);
+  const showDelModal = (feed) => {
+    setDeleteFeed(feed);
   };
 
   const delHandler = async () => {
@@ -56,20 +68,20 @@ export const Posts = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          uid: deleteUser.uid,
+          feed: deleteFeed,
         }),
       });
 
       const data = await res.json();
 
       if (data.success) {
-        setFeeds((prev) => prev.filter((user) => user.uid !== deleteUser.uid));
+        setFeeds((prev) => prev.filter((feed) => feed.id !== deleteFeed.id));
       }
     } catch (e) {
       console.log('Error deleting user: ', e);
     }
 
-    setDeleteUser(null);
+    setDeleteFeed(null);
     setDeleting(false);
   };
 
@@ -80,18 +92,34 @@ export const Posts = () => {
     }
   }, []);
 
+  const reportedToggle = (e) => {
+    setReportedOnly(e.target.checked);
+    lastDoc.current = 'start';
+    setFeeds([]);
+    e.target.checked ? getFeeds(undefined, true) : getFeeds();
+  };
+
   return (
     <div className={styles.container}>
-      <div className={styles.inputContainer}>
-        <button>Show Reported Posts Only</button>
+      <div className={styles.topBar}>
+        <input
+          type="checkbox"
+          id="reported"
+          name="reported"
+          onChange={reportedToggle}
+          disabled={loading}
+        />
+        <label htmlFor="reported"> Show Reported Posts Only</label>
       </div>
 
       <InfiniteScroll
         dataLength={feeds.length}
         next={() => {
-          if (!loading) getFeeds();
+          if (!loading) {
+            reportedOnly ? getFeeds(undefined, true) : getFeeds();
+          }
         }}
-        className={styles.feedContainer}
+        className={styles.scrollContainer}
         hasMore={lastDoc.current !== 'end'}
         loader={
           <div className={styles.ldsRoller}>
@@ -116,13 +144,14 @@ export const Posts = () => {
         ))}
       </InfiniteScroll>
 
-      {deleteUser ? (
+      {deleteFeed ? (
         <div className={styles.modalOverlay}>
           <div className={styles.modal}>
             <div className={styles.modalBody}>
               <h3 style={{ textAlign: 'center' }}>Delete Feed!</h3>
               <p>
-                Are you sure you want to delete <b>{deleteUser.username}</b>?
+                Are you sure you want to delete this feed and all the
+                likes/comments associated with it?
                 <br />
                 It is a non-recoverable action.
               </p>
@@ -131,13 +160,15 @@ export const Posts = () => {
               <button onClick={delHandler}>
                 {deleting ? 'Deleting...' : 'Yes, delete'}
               </button>
-              <button
-                onClick={() => {
-                  setDeleteUser(null);
-                }}
-              >
-                Cancel
-              </button>
+              {!deleting ? (
+                <button
+                  onClick={() => {
+                    setDeleteFeed(null);
+                  }}
+                >
+                  Cancel
+                </button>
+              ) : null}
             </div>
           </div>
         </div>
@@ -148,6 +179,21 @@ export const Posts = () => {
 
 const SingleFeed = ({ feed, showDelModal }) => {
   const [image, setImage] = useState(defaultImg);
+  const [user, setUser] = useState(null);
+  const [defaultDp, setDefaultDp] = useState(userDefault);
+  const getUserData = async () => {
+    const userSnap = await getDoc(doc(db, 'users', feed.uid));
+    if (userSnap.exists()) {
+      const userImg = await getImage(userSnap.data().avatar);
+      if (userImg) {
+        setDefaultDp(userImg);
+      }
+      setUser(userSnap.data());
+    }
+  };
+  useEffect(() => {
+    getUserData();
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -159,11 +205,60 @@ const SingleFeed = ({ feed, showDelModal }) => {
   }, []);
 
   return (
-    <div className={styles.singleFeed}>
-      <div className={styles.feedContainer}>
-        <h3>{feed.title}</h3>
-        <div className={styles.imgDiv}>
-          <img src={image} style={{ maxWidth: '100%' }} alt={feed.title} />
+    <div className={styles.feedContainer}>
+      <div className={styles.desc}>
+        <img
+          src={defaultDp}
+          style={{ width: '95px', aspectRatio: 1, borderRadius: '50%' }}
+          alt={user ? user.username + ' dp' : 'default dp'}
+        />
+        <h3>{user ? user.username : ''}</h3>
+        <div className={styles.delBtn}>
+          <button
+            onClick={() => {
+              showDelModal({
+                ...feed,
+                username: user.username,
+                email: user.email,
+              });
+            }}
+          >
+            Delete Feed
+          </button>
+        </div>
+      </div>
+      <div className={styles.imgDiv}>
+        <h4 style={{ margin: '0 0 1rem 0' }}>{feed.title}</h4>
+        <div
+          style={{
+            backgroundColor: '#000',
+            borderRadius: '2rem',
+            overflow: 'hidden',
+          }}
+        >
+          {feed.isVideo ? (
+            <video
+              width="fit-content"
+              height="auto"
+              style={{
+                margin: '0 auto',
+                display: 'block',
+              }}
+              controls
+            >
+              <source src={image} type="video/mp4" />
+            </video>
+          ) : (
+            <img
+              src={image}
+              alt={feed.title}
+              style={{ display: 'block', margin: '0 auto', maxWidth: '100%' }}
+            />
+          )}
+        </div>
+        <div className={styles.details}>
+          <p>{feed.likes.length} Likes</p>
+          <p>{feed.comments.length} Comments</p>
         </div>
       </div>
     </div>
