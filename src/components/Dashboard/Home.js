@@ -31,6 +31,7 @@ export const Home = () => {
     <div className={styles.homeContainer}>
       <Link to="/manage-users">Manage Users</Link>
       <Link to="/manage-posts">Manage Posts</Link>
+      <Link to="/user-feedback">User Feedback</Link>
       {userData ? (
         <CSVLink data={userData} filename={'user-info.csv'}>
           Download User Info
