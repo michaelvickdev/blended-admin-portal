@@ -34,6 +34,30 @@
   gap: 1rem;
 }
 
+.commentBubble {
+  display: flex;
+  flex-direction: column;
+  margin: 1rem 0;
+  background-color: #d3d3d3;
+  padding: 1.5rem;
+  border-radius: 2rem;
+  gap: 1rem;
+}
+
+.commentBubble > * {
+  margin: 0;
+}
+
+.commentContent {
+  display: flex;
+  justify-content: space-between;
+}
+.closeComment {
+  margin-right: 1rem;
+  cursor: pointer;
+  color: #424242;
+}
+
 .imgDiv {
   padding: 2rem 2rem 0 2rem;
 }
@@ -79,7 +103,6 @@
 .modalOverlay {
   display: flex;
   position: fixed;
-  overflow: hidden;
   top: 0;
   left: 0;
   right: 0;

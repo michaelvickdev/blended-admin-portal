@@ -11,6 +11,8 @@ import {
   getDoc,
   doc,
   where,
+  arrayRemove,
+  updateDoc,
 } from 'firebase/firestore';
 import { getImage } from '../../../hooks/getImage';
 import InfiniteScroll from 'react-infinite-scroll-component';
@@ -29,6 +31,7 @@ export const Posts = () => {
   const [deleting, setDeleting] = useState(false);
   const [deleteFeed, setDeleteFeed] = useState(null);
   const [reportedOnly, setReportedOnly] = useState(false);
+  const [comment, setComment] = useState(false);
 
   const getFeeds = async (count = POST_PER_PAGE, reported = false) => {
     if (lastDoc.current === 'end') return;
@@ -99,6 +102,36 @@ export const Posts = () => {
     e.target.checked ? getFeeds(undefined, true) : getFeeds();
   };
 
+  const delComment = async (toDel) => {
+    const id = toDel.id;
+    delete toDel.id;
+    const feedRef = doc(db, 'feeds', id);
+    await updateDoc(feedRef, {
+      comments: arrayRemove(toDel),
+    });
+    setComment((prev) =>
+      prev.filter((single) => {
+        delete single.id;
+        return JSON.stringify(toDel) !== JSON.stringify(single);
+      })
+    );
+    setFeeds((prev) =>
+      prev.map((feed) =>
+        feed.id === id
+          ? {
+              ...feed,
+              comments: feed.comments.filter(
+                (single) => JSON.stringify(toDel) !== JSON.stringify(single)
+              ),
+            }
+          : feed
+      )
+    );
+    if (!comment.length) {
+      setComment(false);
+    }
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.topBar}>
@@ -140,7 +173,12 @@ export const Posts = () => {
         }
       >
         {feeds.map((feed) => (
-          <SingleFeed key={feed.id} feed={feed} {...{ showDelModal }} />
+          <SingleFeed
+            key={feed.id}
+            feed={feed}
+            {...{ showDelModal }}
+            setComment={setComment}
+          />
         ))}
       </InfiniteScroll>
 
@@ -173,11 +211,61 @@ export const Posts = () => {
           </div>
         </div>
       ) : null}
+
+      {comment ? (
+        <div className={styles.modalOverlay}>
+          <div
+            className={styles.modal}
+            style={{
+              width: '80%',
+              maxWidth: '1024px',
+              maxHeight: '80%',
+              overflowY: 'scroll',
+              padding: 0,
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                position: 'sticky',
+                top: 0,
+                background: '#fff',
+              }}
+            >
+              <h3 style={{ textAlign: 'center' }}>Comments</h3>
+              <span
+                className={styles.closeComment}
+                onClick={() => setComment(false)}
+              >
+                &#10006;
+              </span>
+            </div>
+            <div style={{ padding: '1rem 2rem' }}>
+              {comment.length ? (
+                comment.map((single) => (
+                  <Comment
+                    comment={single}
+                    key={single.sentBy + single.timestamp}
+                    id={comment.id}
+                    delComment={delComment}
+                  />
+                ))
+              ) : (
+                <p style={{ textAlign: 'center', margin: '2rem' }}>
+                  There are no comments
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 };
 
-const SingleFeed = ({ feed, showDelModal }) => {
+const SingleFeed = ({ feed, showDelModal, setComment }) => {
   const [image, setImage] = useState(defaultImg);
   const [user, setUser] = useState(null);
   const [defaultDp, setDefaultDp] = useState(userDefault);
@@ -245,6 +333,7 @@ const SingleFeed = ({ feed, showDelModal }) => {
                 display: 'block',
               }}
               controls
+              name="media"
             >
               <source src={image} type="video/mp4" />
             </video>
@@ -258,9 +347,45 @@ const SingleFeed = ({ feed, showDelModal }) => {
         </div>
         <div className={styles.details}>
           <p>{feed.likes.length} Likes</p>
-          <p>{feed.comments.length} Comments</p>
+          <p
+            onClick={() =>
+              setComment(
+                feed.comments.map((single) => ({ ...single, id: feed.id }))
+              )
+            }
+          >
+            {feed.comments.length} Comments
+          </p>
         </div>
       </div>
+    </div>
+  );
+};
+
+const Comment = ({ comment, id, delComment }) => {
+  const [user, setUser] = useState('');
+  useEffect(() => {
+    (async () => {
+      const userData = await getDoc(doc(db, 'users', comment.sentBy));
+      setUser(userData.data().username);
+    })();
+  }, []);
+
+  return (
+    <div className={styles.commentBubble}>
+      <div className={styles.commentContent}>
+        <div>
+          <h4>{user}</h4>
+          <p>{comment.text}</p>
+        </div>
+        <div className={styles.delBtn} style={{ margin: 0 }}>
+          <button onClick={() => delComment(comment, id)}>Delete</button>
+        </div>
+      </div>
+      <p style={{ alignSelf: 'flex-end', color: '#6e6869' }}>
+        {new Date(comment.timestamp).toLocaleTimeString()} on{' '}
+        {new Date(comment.timestamp).toLocaleDateString()}
+      </p>
     </div>
   );
 };
