@@ -13,6 +13,7 @@ import {
 import { getImage } from '../../../hooks/getImage';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import defaultImg from '../../../assets/default-profile.png';
+import { SendMsgModal } from '../../SendMsgModal/SendMsgModal';
 const DEL_URL =
   'https://us-central1-blended-mates.cloudfunctions.net/deleteUser';
 
@@ -27,6 +28,7 @@ export const Users = () => {
   const [deleting, setDeleting] = useState(false);
   const [searchUser, setSearchUser] = useState('');
   const [deleteUser, setDeleteUser] = useState(null);
+  const [msgModal, setMsgModal] = useState(false);
 
   const getUsers = async (count = POST_PER_PAGE) => {
     if (lastDoc.current === 'end') return;
@@ -96,7 +98,6 @@ export const Users = () => {
   useEffect(() => {
     if (!mounted.current) {
       mounted.current = true;
-      console.log('In effect');
       getUsers();
     }
   }, []);
@@ -116,7 +117,12 @@ export const Users = () => {
         searchData.length ? (
           <div className={styles.userContainer}>
             {searchData.map((user) => (
-              <SingleUser key={user.uid} user={user} {...{ showDelModal }} />
+              <SingleUser
+                key={user.uid}
+                user={user}
+                {...{ showDelModal }}
+                showMsgModal={setMsgModal}
+              />
             ))}
           </div>
         ) : loading ? (
@@ -160,7 +166,12 @@ export const Users = () => {
           }
         >
           {users.map((user) => (
-            <SingleUser key={user.uid} user={user} {...{ showDelModal }} />
+            <SingleUser
+              key={user.uid}
+              user={user}
+              {...{ showDelModal }}
+              showMsgModal={setMsgModal}
+            />
           ))}
         </InfiniteScroll>
       )}
@@ -193,11 +204,12 @@ export const Users = () => {
           </div>
         </div>
       ) : null}
+      <SendMsgModal visible={msgModal} closeModal={() => setMsgModal(false)} />
     </div>
   );
 };
 
-const SingleUser = ({ user, showDelModal }) => {
+const SingleUser = ({ user, showDelModal, showMsgModal }) => {
   const [image, setImage] = useState(defaultImg);
 
   useEffect(() => {
@@ -232,6 +244,18 @@ const SingleUser = ({ user, showDelModal }) => {
           }}
         >
           Delete User
+        </button>
+
+        <button
+          onClick={() => {
+            showMsgModal({
+              username: user.username,
+              uid: user.uid,
+            });
+          }}
+          style={{ backgroundColor: '#26742dd6' }}
+        >
+          Send Message
         </button>
       </div>
     </div>

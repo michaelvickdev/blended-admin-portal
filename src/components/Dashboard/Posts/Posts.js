@@ -18,6 +18,7 @@ import { getImage } from '../../../hooks/getImage';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import defaultImg from '../../../assets/default-post.jpg';
 import userDefault from '../../../assets/default-profile.png';
+import { SendMsgModal } from '../../SendMsgModal/SendMsgModal';
 const DEL_URL =
   'https://us-central1-blended-mates.cloudfunctions.net/deleteFeed';
 
@@ -32,6 +33,7 @@ export const Posts = () => {
   const [deleteFeed, setDeleteFeed] = useState(null);
   const [reportedOnly, setReportedOnly] = useState(false);
   const [comment, setComment] = useState(false);
+  const [msgModal, setMsgModal] = useState(false);
 
   const getFeeds = async (count = POST_PER_PAGE, reported = false) => {
     if (lastDoc.current === 'end') return;
@@ -178,6 +180,7 @@ export const Posts = () => {
             feed={feed}
             {...{ showDelModal }}
             setComment={setComment}
+            showMsgModal={setMsgModal}
           />
         ))}
       </InfiniteScroll>
@@ -261,11 +264,12 @@ export const Posts = () => {
           </div>
         </div>
       ) : null}
+      <SendMsgModal visible={msgModal} closeModal={() => setMsgModal(false)} />
     </div>
   );
 };
 
-const SingleFeed = ({ feed, showDelModal, setComment }) => {
+const SingleFeed = ({ feed, showDelModal, setComment, showMsgModal }) => {
   const [image, setImage] = useState(defaultImg);
   const [user, setUser] = useState(null);
   const [defaultDp, setDefaultDp] = useState(userDefault);
@@ -307,11 +311,22 @@ const SingleFeed = ({ feed, showDelModal, setComment }) => {
               showDelModal({
                 ...feed,
                 username: user.username,
-                email: user.email,
+                uid: user.uid,
               });
             }}
           >
             Delete Feed
+          </button>
+          <button
+            onClick={() => {
+              showMsgModal({
+                username: user.username,
+                uid: user.uid,
+              });
+            }}
+            style={{ backgroundColor: '#26742dd6' }}
+          >
+            Send Message
           </button>
         </div>
       </div>

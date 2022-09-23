@@ -15,8 +15,10 @@
 
 .delBtn {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   margin-left: auto;
+  justify-content: center;
+  gap: 1rem;
 }
 
 .delBtn > button {
