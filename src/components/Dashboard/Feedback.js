@@ -5,10 +5,13 @@ import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 import ldsRoller from './Users/Users.module.css';
 import { getImage } from '../../hooks/getImage';
 import userDefault from '../../assets/default-profile.png';
+import containerStyle from './Posts/Posts.module.css';
+import { SendMsgModal } from '../SendMsgModal/SendMsgModal';
 
-export const Feedback = () => {
+export const Feedback = ({ showBack }) => {
   const [feedback, setFeedbacks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [msgModal, setMsgModal] = useState(false);
 
   const getFeedback = async () => {
     const feedbackSnaps = await getDocs(collection(db, 'support'));
@@ -17,6 +20,7 @@ export const Feedback = () => {
     setLoading(false);
   };
   useEffect(() => {
+    showBack();
     getFeedback();
   }, []);
   if (!feedback.length) {
@@ -37,15 +41,20 @@ export const Feedback = () => {
   }
 
   return (
-    <div style={{ padding: '2rem' }}>
+    <div className={containerStyle.container}>
       {feedback.map((fb, index) => (
-        <SingleFeedback key={index} feedback={fb} />
+        <SingleFeedback key={index} feedback={fb} showMsgModal={setMsgModal} />
       ))}
+      <SendMsgModal
+        visible={msgModal}
+        closeModal={() => setMsgModal(false)}
+        reply={true}
+      />
     </div>
   );
 };
 
-const SingleFeedback = ({ feedback }) => {
+const SingleFeedback = ({ feedback, showMsgModal }) => {
   const [user, setUser] = useState(null);
   const [defaultDp, setDefaultDp] = useState(userDefault);
   const getUserData = async () => {
@@ -58,7 +67,6 @@ const SingleFeedback = ({ feedback }) => {
       setUser(userSnap.data());
     }
   };
-  console.log(new Date(feedback.createdAt.toDate()));
   useEffect(() => {
     getUserData();
   }, []);
@@ -71,12 +79,25 @@ const SingleFeedback = ({ feedback }) => {
           alt={user ? user.username + ' dp' : 'default dp'}
         />
         <h3>{user ? user.username : ''}</h3>
-        <p style={{ color: '#6e6869', marginLeft: 'auto' }}>
-          {new Date(feedback.createdAt.toDate()).toLocaleTimeString()} on{' '}
-          {new Date(feedback.createdAt.toDate()).toLocaleDateString()}
-        </p>
+        <div style={{ color: '#6e6869', marginLeft: 'auto' }}>
+          <button
+            onClick={() => {
+              showMsgModal({
+                username: user.username,
+                uid: user.uid,
+              });
+            }}
+            className={styles.sendMsg}
+          >
+            Send Message
+          </button>
+        </div>
       </div>
       <p>{feedback.comment}</p>
+      <p style={{ color: '#6e6869', padding: 0, textAlign: 'end' }}>
+        {new Date(feedback.createdAt.toDate()).toLocaleTimeString()} on{' '}
+        {new Date(feedback.createdAt.toDate()).toLocaleDateString()}
+      </p>
     </div>
   );
 };

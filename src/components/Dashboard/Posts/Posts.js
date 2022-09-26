@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styles from './Posts.module.css';
+import userStyles from '../Users/Users.module.css';
 import { db } from '../../../config/firebase';
 import {
   getDocs,
@@ -24,13 +25,14 @@ const DEL_URL =
 
 const POST_PER_PAGE = 4;
 
-export const Posts = () => {
+export const Posts = ({ showBack }) => {
   const lastDoc = useRef('start');
   const mounted = useRef(false);
   const [feeds, setFeeds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
   const [deleteFeed, setDeleteFeed] = useState(null);
+  const [deleteComment, setDeleteComment] = useState(false);
   const [reportedOnly, setReportedOnly] = useState(false);
   const [comment, setComment] = useState(false);
   const [msgModal, setMsgModal] = useState(false);
@@ -91,6 +93,7 @@ export const Posts = () => {
   };
 
   useEffect(() => {
+    showBack();
     if (!mounted.current) {
       mounted.current = true;
       getFeeds();
@@ -237,7 +240,9 @@ export const Posts = () => {
                 background: '#fff',
               }}
             >
-              <h3 style={{ textAlign: 'center' }}>Comments</h3>
+              <h3 style={{ textAlign: 'center', marginLeft: '1rem' }}>
+                Comments
+              </h3>
               <span
                 className={styles.closeComment}
                 onClick={() => setComment(false)}
@@ -252,7 +257,7 @@ export const Posts = () => {
                     comment={single}
                     key={single.sentBy + single.timestamp}
                     id={comment.id}
-                    delComment={delComment}
+                    delComment={setDeleteComment}
                   />
                 ))
               ) : (
@@ -265,6 +270,39 @@ export const Posts = () => {
         </div>
       ) : null}
       <SendMsgModal visible={msgModal} closeModal={() => setMsgModal(false)} />
+      {deleteComment && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
+            <div className={styles.modalBody}>
+              <h3 style={{ textAlign: 'center' }}>Delete Comment!</h3>
+              <p>
+                Are you sure you want to delete this comment?
+                <br />
+                It is a non-recoverable action.
+              </p>
+            </div>
+            <div className={styles.modalBtn}>
+              <button
+                onClick={async () => {
+                  await delComment(deleteComment.comment, deleteComment.id);
+                  setDeleteComment(false);
+                }}
+              >
+                Yes, delete
+              </button>
+              {!deleting ? (
+                <button
+                  onClick={() => {
+                    setDeleteComment(false);
+                  }}
+                >
+                  Cancel
+                </button>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -394,7 +432,9 @@ const Comment = ({ comment, id, delComment }) => {
           <p>{comment.text}</p>
         </div>
         <div className={styles.delBtn} style={{ margin: 0 }}>
-          <button onClick={() => delComment(comment, id)}>Delete</button>
+          <button onClick={() => delComment({ comment: comment, id: id })}>
+            Delete
+          </button>
         </div>
       </div>
       <p style={{ alignSelf: 'flex-end', color: '#6e6869' }}>

@@ -4,7 +4,7 @@ import modalStyles from './SendMsgModal.module.css';
 
 const SEND_URL = 'https://us-central1-blended-mates.cloudfunctions.net/sendMsg';
 
-export const SendMsgModal = ({ visible, closeModal }) => {
+export const SendMsgModal = ({ visible, closeModal, reply }) => {
   const [msg, setMsg] = useState('');
   const [sending, setSending] = useState(false);
   const sendMsg = async () => {
@@ -14,7 +14,9 @@ export const SendMsgModal = ({ visible, closeModal }) => {
       console.log({
         username: visible.username,
         email: visible.uid,
-        msg: msg,
+        msg: reply
+          ? `This message in response to the feedback you provided. \n${msg}`
+          : msg,
       });
       await fetch(SEND_URL, {
         method: 'POST',

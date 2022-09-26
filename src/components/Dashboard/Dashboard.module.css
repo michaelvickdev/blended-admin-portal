@@ -7,7 +7,7 @@
   gap: 1.2rem;
 }
 
-.homeContainer > * {
+.homeContainer > a {
   padding: 3rem;
   background: #fff;
   border-radius: 2.5rem;
@@ -35,6 +35,17 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.sendMsg {
+  background-color: #26742dd6;
+  color: #fff;
+  border-radius: 1rem;
+  padding: 0.5rem 1rem;
+  margin-left: 1rem;
+  cursor: pointer;
+  border: none;
+  outline: none;
 }
 
 .navigationBar > button {

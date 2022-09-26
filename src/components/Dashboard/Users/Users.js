@@ -19,7 +19,7 @@ const DEL_URL =
 
 const POST_PER_PAGE = 4;
 
-export const Users = () => {
+export const Users = ({ showBack }) => {
   const lastDoc = useRef('start');
   const mounted = useRef(false);
   const [users, setUsers] = useState([]);
@@ -96,6 +96,7 @@ export const Users = () => {
   }, [searchUser]);
 
   useEffect(() => {
+    showBack();
     if (!mounted.current) {
       mounted.current = true;
       getUsers();
